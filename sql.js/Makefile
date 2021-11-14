@@ -66,7 +66,7 @@ EMFLAGS_DEBUG = \
 	-s SAFE_HEAP=1 \
 	-O0
 
-BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc
+BITCODE_FILES = out/sqlite3.bc out/extension-functions.bc out/fts3_porter.bc out/Normalize.bc out/rank.bc
 
 OUTPUT_WRAPPER_FILES = src/shell-pre.js src/shell-post.js
 
@@ -159,6 +159,24 @@ out/extension-functions.bc: sqlite-src/$(SQLITE_AMALGAMATION)
 	mkdir -p out
 	# Generate llvm bitcode
 	$(EMCC) $(CFLAGS) -s LINKABLE=1 -c sqlite-src/$(SQLITE_AMALGAMATION)/extension-functions.c -o $@
+
+out/fts3_porter.bc:
+	cp mozporter/fts3_porter.c mozporter/fts3_tokenizer.h sqlite-src/$(SQLITE_AMALGAMATION)/
+	mkdir -p out
+	# Generate llvm bitcode
+	$(EMCC) $(CFLAGS) -s LINKABLE=1 -c sqlite-src/$(SQLITE_AMALGAMATION)/fts3_porter.c -o $@
+
+out/Normalize.bc:
+	cp mozporter/Normalize.c sqlite-src/$(SQLITE_AMALGAMATION)/
+	mkdir -p out
+	# Generate llvm bitcode
+	$(EMCC) $(CFLAGS) -s LINKABLE=1 -c sqlite-src/$(SQLITE_AMALGAMATION)/Normalize.c -o $@
+
+out/rank.bc:
+	cp mozporter/rank.* sqlite-src/$(SQLITE_AMALGAMATION)/
+	mkdir -p out
+	# Generate llvm bitcode
+	$(EMCC) $(CFLAGS) -s LINKABLE=1 -c sqlite-src/$(SQLITE_AMALGAMATION)/rank.m -o $@
 
 # TODO: This target appears to be unused. If we re-instatate it, we'll need to add more files inside of the JS folder
 # module.tar.gz: test package.json AUTHORS README.md dist/sql-asm.js
